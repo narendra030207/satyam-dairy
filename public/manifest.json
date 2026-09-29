@@ -1,0 +1,16 @@
+{
+  "name": "Satyam Dairy",
+  "short_name": "Dairy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#007aff",
+  "description": "Satyam Dairy Farmer Records Application",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
