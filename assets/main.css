@@ -1,0 +1,58 @@
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-transition {
+  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+body {
+  background: radial-gradient(circle at top left, #1a202c, #000000);
+  background-attachment: fixed;
+  color: #f8fafc;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* 3D Button */
+.btn-3d {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 8px;
+  border-bottom: 4px solid #047857;
+  color: white;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-3d:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-3d:active {
+  transform: translateY(2px);
+  border-bottom-width: 0px;
+  margin-top: 4px;
+  box-shadow: none;
+}
+
+/* Hide scrollbar but keep scrolling functionality */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

@@ -1,0 +1,21 @@
+[application]
+name = "Satyam Dairy"
+asset_dir = "public"
+out_dir = "dist"
+
+[web.app]
+
+# include `assets` in web platform
+[web.resource]
+
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
