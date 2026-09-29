@@ -34,28 +34,30 @@ fn main() {
 #[component]
 fn App() -> Element {
     // Provide a global state for records
-    use_context_provider(|| Signal::new(vec![
-        Record {
-            id: 1,
-            farmer_name: "Ramesh Singh".to_string(),
-            item_type: "Wheat Bran".to_string(),
-            quantity_kg: 50.0,
-            amount: 1500.0,
-            date: "2026-09-29".to_string(),
-        },
-        Record {
-            id: 2,
-            farmer_name: "Suresh Kumar".to_string(),
-            item_type: "Chaff (Chokar)".to_string(),
-            quantity_kg: 30.0,
-            amount: 900.0,
-            date: "2026-09-28".to_string(),
-        },
-    ]));
+    use_context_provider(|| {
+        Signal::new(vec![
+            Record {
+                id: 1,
+                farmer_name: "Ramesh Singh".to_string(),
+                item_type: "Wheat Bran".to_string(),
+                quantity_kg: 50.0,
+                amount: 1500.0,
+                date: "2026-09-29".to_string(),
+            },
+            Record {
+                id: 2,
+                farmer_name: "Suresh Kumar".to_string(),
+                item_type: "Chaff (Chokar)".to_string(),
+                quantity_kg: 30.0,
+                amount: 900.0,
+                date: "2026-09-28".to_string(),
+            },
+        ])
+    });
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } 
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
     }
@@ -103,33 +105,33 @@ fn Navbar() -> Element {
 #[component]
 fn Home() -> Element {
     let records = use_context::<Signal<Vec<Record>>>();
-    
+
     let total_kg = records.read().iter().map(|r| r.quantity_kg).sum::<f32>();
     let total_amount = records.read().iter().map(|r| r.amount).sum::<f32>();
 
     rsx! {
         div {
             class: "max-w-7xl mx-auto px-6 page-transition",
-            
+
             h1 { class: "text-4xl font-extrabold mb-8 text-white tracking-tight cursor-default", "Dashboard Overview" }
-            
+
             div {
                 class: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 cursor-default",
-                
+
                 // Stat Card 1
                 div {
                     class: "glass-panel p-6 rounded-2xl cursor-pointer hover:bg-white/10 transition duration-300 transform hover:-translate-y-1",
                     h3 { class: "text-gray-400 text-sm font-medium uppercase tracking-wider mb-2", "Total Farmers" }
                     p { class: "text-4xl font-bold text-emerald-400", "{records.read().len()}" }
                 }
-                
+
                 // Stat Card 2
                 div {
                     class: "glass-panel p-6 rounded-2xl cursor-pointer hover:bg-white/10 transition duration-300 transform hover:-translate-y-1",
                     h3 { class: "text-gray-400 text-sm font-medium uppercase tracking-wider mb-2", "Total Feed Supplied" }
                     p { class: "text-4xl font-bold text-emerald-400", "{total_kg} kg" }
                 }
-                
+
                 // Stat Card 3
                 div {
                     class: "glass-panel p-6 rounded-2xl cursor-pointer hover:bg-white/10 transition duration-300 transform hover:-translate-y-1",
@@ -137,7 +139,7 @@ fn Home() -> Element {
                     p { class: "text-4xl font-bold text-emerald-400", "₹{total_amount}" }
                 }
             }
-            
+
             div {
                 class: "glass-panel p-8 rounded-2xl cursor-pointer hover:shadow-2xl transition duration-500",
                 h2 { class: "text-2xl font-bold mb-4", "Recent Transactions" }
@@ -159,7 +161,7 @@ fn Records() -> Element {
     rsx! {
         div {
             class: "max-w-7xl mx-auto px-6 page-transition",
-            
+
             div { class: "flex justify-between items-center mb-8",
                 h1 { class: "text-4xl font-extrabold text-white tracking-tight cursor-default", "Farmer Records" }
                 Link {
@@ -215,7 +217,7 @@ fn Records() -> Element {
                         }
                     }
                 }
-                
+
                 if records.read().is_empty() {
                     div {
                         class: "p-8 text-center text-gray-400 cursor-default",
@@ -230,7 +232,7 @@ fn Records() -> Element {
 #[component]
 fn AddRecord() -> Element {
     let mut records = use_context::<Signal<Vec<Record>>>();
-    
+
     let mut farmer_name = use_signal(|| "".to_string());
     let mut item_type = use_signal(|| "Wheat Bran".to_string());
     let mut quantity = use_signal(|| "".to_string());
@@ -241,9 +243,9 @@ fn AddRecord() -> Element {
         e.prevent_default();
         let q: f32 = quantity.read().parse().unwrap_or(0.0);
         let a: f32 = amount.read().parse().unwrap_or(0.0);
-        
+
         let new_id = records.read().iter().map(|r| r.id).max().unwrap_or(0) + 1;
-        
+
         records.write().push(Record {
             id: new_id,
             farmer_name: farmer_name.read().clone(),
@@ -252,7 +254,7 @@ fn AddRecord() -> Element {
             amount: a,
             date: "2026-09-29".to_string(),
         });
-        
+
         farmer_name.write().clear();
         quantity.write().clear();
         amount.write().clear();
@@ -262,12 +264,12 @@ fn AddRecord() -> Element {
     rsx! {
         div {
             class: "max-w-2xl mx-auto px-6 page-transition",
-            
+
             h1 { class: "text-4xl font-extrabold text-white tracking-tight mb-8 cursor-default", "Add New Record" }
-            
+
             div {
                 class: "glass-panel p-8 rounded-2xl cursor-default",
-                
+
                 if *is_submitted.read() {
                     div {
                         class: "mb-6 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-300 font-medium flex items-center justify-between cursor-pointer",
@@ -279,11 +281,11 @@ fn AddRecord() -> Element {
                         }
                     }
                 }
-                
+
                 form {
                     onsubmit: handle_submit,
                     class: "space-y-6",
-                    
+
                     // Farmer Name
                     div {
                         label { class: "block text-sm font-medium text-gray-300 mb-2 cursor-pointer", "Farmer Name" }
@@ -296,7 +298,7 @@ fn AddRecord() -> Element {
                             required: true,
                         }
                     }
-                    
+
                     // Item Type
                     div {
                         label { class: "block text-sm font-medium text-gray-300 mb-2 cursor-pointer", "Feed Type" }
@@ -309,7 +311,7 @@ fn AddRecord() -> Element {
                             option { value: "Compound Feed", "Compound Feed" }
                         }
                     }
-                    
+
                     // Quantity and Amount row
                     div {
                         class: "grid grid-cols-1 md:grid-cols-2 gap-6",
@@ -338,7 +340,7 @@ fn AddRecord() -> Element {
                             }
                         }
                     }
-                    
+
                     // Submit button
                     div {
                         class: "pt-4",
