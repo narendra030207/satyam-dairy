@@ -119,96 +119,161 @@ fn App() -> Element {
 fn Navbar() -> Element {
     rsx! {
         nav {
-            class: "fixed w-full z-50 ios-nav px-4 h-11 flex justify-between items-center cursor-default",
+            class: "fixed w-full z-50 h-16 flex justify-between items-center px-4 bg-[#fbfdf9] dark:bg-[#191c1a] shadow-sm",
             div {
-                class: "w-1/3 flex justify-start",
+                class: "flex items-center gap-4",
                 Link {
                     to: Route::Dashboard {},
-                    class: "text-[#007aff] dark:text-[#0a84ff] text-[17px] active:opacity-50 transition-opacity flex items-center cursor-pointer",
-                    "Dashboard"
-                }
-            }
-            div {
-                class: "w-1/3 flex justify-center",
-                span {
-                    class: "text-[17px] font-semibold text-black dark:text-white cursor-default",
+                    class: "text-[22px] font-medium text-[#191c1a] dark:text-[#e1e3de]",
                     "Satyam Dairy"
                 }
             }
             div {
-                class: "w-1/3 flex justify-end gap-3",
-                Link {
-                    to: Route::Records {},
-                    class: "text-[#007aff] dark:text-[#0a84ff] text-[17px] active:opacity-50 transition-opacity cursor-pointer",
-                    "Records"
-                }
+                class: "flex items-center gap-2",
                 Link {
                     to: Route::AddRecord {},
-                    class: "text-[#007aff] dark:text-[#0a84ff] text-[17px] font-semibold active:opacity-50 transition-opacity cursor-pointer",
-                    "Add"
+                    class: "w-12 h-12 rounded-full flex items-center justify-center text-[#404943] dark:text-[#c0c9c1] hover:bg-[#191c1a]/5 dark:hover:bg-[#fbfdf9]/5 transition-colors cursor-pointer",
+                    svg {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        class: "w-6 h-6",
+                        fill: "none",
+                        view_box: "0 0 24 24",
+                        stroke: "currentColor",
+                        stroke_width: "2",
+                        path {
+                            stroke_linecap: "round",
+                            stroke_linejoin: "round",
+                            d: "M12 4v16m8-8H4"
+                        }
+                    }
+                }
+                Link {
+                    to: Route::Records {},
+                    class: "w-12 h-12 rounded-full flex items-center justify-center text-[#404943] dark:text-[#c0c9c1] hover:bg-[#191c1a]/5 dark:hover:bg-[#fbfdf9]/5 transition-colors cursor-pointer",
+                    svg {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        class: "w-6 h-6",
+                        fill: "none",
+                        view_box: "0 0 24 24",
+                        stroke: "currentColor",
+                        stroke_width: "2",
+                        path {
+                            stroke_linecap: "round",
+                            stroke_linejoin: "round",
+                            d: "M4 6h16M4 12h16M4 18h16"
+                        }
+                    }
                 }
             }
         }
+
         div {
-            class: "pt-[60px] pb-8 min-h-screen",
+            class: "pt-16 min-h-screen w-full",
             Outlet::<Route> {}
         }
     }
 }
-
 #[component]
 fn Dashboard() -> Element {
     let records = use_context::<Signal<Vec<Record>>>();
+    let rs = records.read();
 
-    let total_kg = records.read().iter().map(|r| r.quantity_kg).sum::<f32>();
-    let total_kg = if total_kg.abs() < 0.001 {
-        0.0
-    } else {
-        total_kg
+    let total_farmers = {
+        let mut names: Vec<&String> = rs.iter().map(|r| &r.farmer_name).collect();
+        names.sort();
+        names.dedup();
+        names.len()
     };
 
-    let total_amount = records.read().iter().map(|r| r.amount).sum::<f32>();
-    let total_amount = if total_amount.abs() < 0.001 {
-        0.0
-    } else {
-        total_amount
-    };
-    let total_farmers = records.read().len();
+    let total_feed: f32 = rs.iter().map(|r| r.quantity_kg).sum();
+    let total_revenue: f32 = rs.iter().map(|r| r.amount).sum();
 
     rsx! {
         div {
-            class: "max-w-3xl mx-auto px-4 page-transition",
+            class: "px-4 pt-6 pb-24 page-transition max-w-2xl mx-auto",
 
-            h1 { class: "text-[34px] font-bold text-black dark:text-white mt-2 mb-6 tracking-tight cursor-default", "Overview" }
+            h1 { class: "text-[28px] font-normal mb-6 text-[#191c1a] dark:text-[#e1e3de]", "Overview" }
 
-            // iOS Summary Widgets
             div {
                 class: "grid grid-cols-2 gap-4 mb-8",
+
                 div {
-                    class: "ios-panel p-4 flex flex-col justify-between h-[110px] cursor-default",
-                    span { class: "text-[15px] text-gray-500 font-medium flex items-center gap-1", "Farmers" }
-                    span { class: "text-[28px] font-bold text-black dark:text-white", "{total_farmers}" }
+                    class: "col-span-2 p-5 flex flex-col bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px]",
+                    span { class: "text-[14px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1", "Total Revenue (₹)" },
+                    span {
+                        class: "text-[36px] font-normal text-[#191c1a] dark:text-[#e1e3de]",
+                        if total_revenue.abs() < 0.001 { "0" } else { "{total_revenue}" }
+                    }
                 }
+
                 div {
-                    class: "ios-panel p-4 flex flex-col justify-between h-[110px] cursor-default",
-                    span { class: "text-[15px] text-gray-500 font-medium flex items-center gap-1", "Feed (kg)" }
-                    span { class: "text-[28px] font-bold text-[#007aff] dark:text-[#0a84ff]", "{total_kg}" }
+                    class: "p-5 flex flex-col bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px]",
+                    span { class: "text-[14px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1", "Farmers" },
+                    span { class: "text-[28px] font-normal text-[#191c1a] dark:text-[#e1e3de]", "{total_farmers}" }
                 }
+
                 div {
-                    class: "ios-panel p-4 flex flex-col justify-between h-[110px] col-span-2 cursor-default",
-                    span { class: "text-[15px] text-gray-500 font-medium flex items-center gap-1", "Total Revenue" }
-                    span { class: "text-[34px] font-bold text-[#34c759] dark:text-[#32d74b]", "₹{total_amount}" }
+                    class: "p-5 flex flex-col bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px]",
+                    span { class: "text-[14px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1", "Total Feed (kg)" },
+                    span {
+                        class: "text-[28px] font-normal text-[#191c1a] dark:text-[#e1e3de]",
+                        if total_feed.abs() < 0.001 { "0" } else { "{total_feed}" }
+                    }
                 }
             }
 
-            h2 { class: "text-[22px] font-bold text-black dark:text-white mb-3 cursor-default ml-2", "Recent Feed Distributions" }
             div {
-                class: "ios-panel overflow-hidden",
+                class: "flex flex-row items-center justify-between mb-4",
+                h2 { class: "text-[20px] font-medium text-[#191c1a] dark:text-[#e1e3de]", "Recent Activity" },
                 Link {
                     to: Route::Records {},
-                    class: "flex justify-between items-center px-4 py-3 bg-transparent active:bg-gray-100 dark:active:bg-gray-800 transition-colors cursor-pointer",
-                    span { class: "text-[17px] text-black dark:text-white", "View All Records" }
-                    span { class: "text-gray-400 text-xl font-medium", "›" }
+                    class: "text-[14px] font-medium text-[#006c4a] dark:text-[#58d6a5] hover:opacity-80 transition-opacity",
+                    "View All"
+                }
+            }
+
+            div {
+                class: "bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px] overflow-hidden",
+
+                if rs.is_empty() {
+                    div {
+                        class: "p-8 text-center text-[#404943] dark:text-[#c0c9c1]",
+                        "No records yet."
+                    }
+                } else {
+                    div {
+                        class: "flex flex-col",
+                        for (i, record) in rs.iter().rev().take(3).enumerate() {
+                            div {
+                                class: format!("p-4 mx-2 flex flex-row justify-between items-center {}",
+                                    if i != 2 && i != rs.len() - 1 { "border-b border-[#c0c9c1]/30 dark:border-[#404943]/30" } else { "" }),
+                                div {
+                                    class: "flex flex-col",
+                                    span { class: "text-[16px] font-medium text-[#191c1a] dark:text-[#e1e3de]", "{record.farmer_name}" },
+                                    span { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1]", "{record.date} • {record.item_type}" }
+                                }
+                                div {
+                                    class: "flex flex-col items-end",
+                                    span { class: "text-[16px] font-medium text-[#191c1a] dark:text-[#e1e3de]", "₹{record.amount}" },
+                                    span { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1]", "{record.quantity_kg} kg" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Link {
+                to: Route::AddRecord {},
+                class: "fixed bottom-6 right-6 w-[56px] h-[56px] bg-[#006c4a] dark:bg-[#58d6a5] text-white dark:text-[#003825] rounded-[16px] shadow-md flex items-center justify-center hover:shadow-lg active:scale-95 transition-all z-50",
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    class: "w-6 h-6",
+                    fill: "none",
+                    view_box: "0 0 24 24",
+                    stroke: "currentColor",
+                    stroke_width: "2",
+                    path { stroke_linecap: "round", stroke_linejoin: "round", d: "M12 4v16m8-8H4" }
                 }
             }
         }
@@ -217,63 +282,40 @@ fn Dashboard() -> Element {
 
 #[component]
 fn Records() -> Element {
-    let mut records = use_context::<Signal<Vec<Record>>>();
-    let record_list = records.read().clone();
-    let length = record_list.len();
+    let records = use_context::<Signal<Vec<Record>>>();
+    let rs = records.read().clone();
 
     rsx! {
         div {
-            class: "max-w-3xl mx-auto px-4 page-transition",
+            class: "px-4 pt-6 pb-24 page-transition max-w-2xl mx-auto",
 
-            h1 { class: "text-[34px] font-bold text-black dark:text-white mt-2 mb-6 tracking-tight cursor-default", "Records" }
+            h1 { class: "text-[28px] font-normal mb-6 text-[#191c1a] dark:text-[#e1e3de]", "All Records" }
 
-            if length == 0 {
-                div {
-                    class: "text-center text-gray-500 mt-20 text-[17px] cursor-default",
-                    "No records found."
-                }
-            } else {
-                div {
-                    class: "ios-panel overflow-hidden cursor-default",
-                    for (i, record) in record_list.into_iter().enumerate() {
-                        div {
-                            class: "flex flex-col relative",
+            div {
+                class: "bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px] overflow-hidden",
+
+                if rs.is_empty() {
+                    div {
+                        class: "p-8 text-center text-[#404943] dark:text-[#c0c9c1]",
+                        "No records found."
+                    }
+                } else {
+                    div {
+                        class: "flex flex-col",
+                        for (i, record) in rs.into_iter().rev().enumerate() {
                             div {
-                                class: "flex justify-between items-center px-4 py-2.5",
+                                class: format!("p-4 mx-2 flex flex-row justify-between items-center hover:bg-[#191c1a]/5 dark:hover:bg-[#fbfdf9]/5 transition-colors {}",
+                                    if i != records.read().len() - 1 { "border-b border-[#c0c9c1]/30 dark:border-[#404943]/30" } else { "" }),
                                 div {
-                                    p { class: "text-[17px] font-semibold text-black dark:text-white", "{record.farmer_name}" }
-                                    p { class: "text-[15px] text-gray-500", "{record.date} • {record.item_type}" }
+                                    class: "flex flex-col",
+                                    span { class: "text-[16px] font-medium text-[#191c1a] dark:text-[#e1e3de]", "{record.farmer_name}" },
+                                    span { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1]", "{record.date} • {record.item_type}" }
                                 }
                                 div {
-                                    class: "text-right flex items-center gap-4",
-                                    div {
-                                        p { class: "text-[17px] font-medium text-black dark:text-white", "₹{record.amount}" }
-                                        p { class: "text-[15px] text-gray-500", "{record.quantity_kg} kg" }
-                                    }
-                                    button {
-                                        class: "text-[#ff3b30] dark:text-[#ff453a] active:opacity-50 p-2 cursor-pointer",
-                                        onclick: move |_| {
-                                            let id = record.id;
-                                            records.write().retain(|r| r.id != id);
-                                        },
-                                        svg {
-                                            xmlns: "http://www.w3.org/2000/svg",
-                                            class: "h-5 w-5",
-                                            fill: "none",
-                                            view_box: "0 0 24 24",
-                                            stroke: "currentColor",
-                                            stroke_width: "2",
-                                            path {
-                                                stroke_linecap: "round",
-                                                stroke_linejoin: "round",
-                                                d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                            }
-                                        }
-                                    }
+                                    class: "flex flex-col items-end",
+                                    span { class: "text-[16px] font-medium text-[#191c1a] dark:text-[#e1e3de]", "₹{record.amount}" },
+                                    span { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1]", "{record.quantity_kg} kg" }
                                 }
-                            }
-                            if i < length - 1 {
-                                div { class: "ml-4 border-b border-gray-200 dark:border-gray-800" }
                             }
                         }
                     }
@@ -282,6 +324,8 @@ fn Records() -> Element {
         }
     }
 }
+
+const FEED_OPTIONS: [&str; 3] = ["Wheat Bran", "Chaff/Chokar", "Corn Meal"];
 
 #[component]
 fn AddRecord() -> Element {
@@ -291,62 +335,57 @@ fn AddRecord() -> Element {
     let mut item_type = use_signal(|| "Wheat Bran".to_string());
     let mut quantity = use_signal(|| "".to_string());
     let mut amount = use_signal(|| "".to_string());
-    let mut is_submitted = use_signal(|| false);
-    let mut is_feed_open = use_signal(|| false);
+    let mut is_premium_menu_open = use_signal(|| false);
+    let nav = use_navigator();
 
     let handle_submit = move |e: Event<FormData>| {
         e.prevent_default();
+
         let q: f32 = quantity.read().parse().unwrap_or(0.0);
         let a: f32 = amount.read().parse().unwrap_or(0.0);
 
-        let new_id = records.read().iter().map(|r| r.id).max().unwrap_or(0) + 1;
-
-        records.write().push(Record {
-            id: new_id,
-            farmer_name: farmer_name.read().clone(),
-            item_type: item_type.read().clone(),
-            quantity_kg: q,
-            amount: a,
-            date: "2026-09-29".to_string(),
-        });
-
-        farmer_name.write().clear();
-        quantity.write().clear();
-        amount.write().clear();
-        *is_submitted.write() = true;
+        if !farmer_name.read().is_empty() && q > 0.0 && a > 0.0 {
+            let mut rs = records.write();
+            let new_id = rs.len() + 1;
+            rs.push(Record {
+                id: new_id,
+                farmer_name: farmer_name.read().clone(),
+                item_type: item_type.read().clone(),
+                quantity_kg: q,
+                amount: a,
+                date: "Today".to_string(),
+            });
+            nav.push(Route::Dashboard {});
+        }
     };
 
     rsx! {
         div {
-            class: "max-w-3xl mx-auto px-4 page-transition",
+            class: "px-4 pt-6 pb-24 page-transition max-w-xl mx-auto",
 
-            h1 { class: "text-[34px] font-bold text-black dark:text-white mt-2 mb-6 tracking-tight cursor-default", "New Record" }
-
-            if *is_submitted.read() {
+            if *is_premium_menu_open.read() {
                 div {
-                    class: "mb-6 p-3 bg-[#e5f9e7] dark:bg-[#1f3b26] rounded-xl flex items-center justify-between",
-                    span { class: "text-[#34c759] font-medium text-[15px]", "Record saved successfully!" }
-                    button {
-                        class: "text-[#34c759] font-bold px-2 active:opacity-50 cursor-pointer",
-                        onclick: move |_| *is_submitted.write() = false,
-                        "×"
-                    }
+                    class: "absolute z-[60] w-[400vw] h-[400vh] -top-[200vh] -left-[200vw]",
+                    onclick: move |_| *is_premium_menu_open.write() = false
                 }
             }
 
+            h1 { class: "text-[28px] font-normal mb-6 text-[#191c1a] dark:text-[#e1e3de]", "New Record" }
+
             form {
                 onsubmit: handle_submit,
+                class: "flex flex-col gap-6",
 
                 div {
-                    class: "ios-panel mb-8 text-[17px] cursor-default",
+                    class: "bg-[#f0f3ec] dark:bg-[#202522] rounded-[24px] p-6 shadow-sm flex flex-col gap-6",
 
                     div {
-                        class: "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800",
-                        label { class: "w-1/3 text-black dark:text-white", "Farmer" }
+                        class: "flex flex-col",
+                        label { class: "text-[12px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1 px-1", "Farmer Name" }
                         input {
                             type: "text",
-                            class: "w-2/3 bg-transparent text-right text-gray-500 dark:text-gray-400 focus:outline-none focus:text-black dark:focus:text-white cursor-text",
-                            placeholder: "Name",
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all",
+                            placeholder: "e.g. Ramesh Kumar",
                             value: "{farmer_name}",
                             oninput: move |e| *farmer_name.write() = e.value(),
                             required: true,
@@ -354,46 +393,47 @@ fn AddRecord() -> Element {
                     }
 
                     div {
-                        class: "relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 cursor-pointer",
-                        onclick: move |e| {
-                            e.stop_propagation();
-                            let current = *is_feed_open.read();
-                            *is_feed_open.write() = !current;
-                        },
-                        label { class: "w-1/3 text-black dark:text-white pointer-events-none", "Feed" }
+                        class: "flex flex-col relative z-[70]",
+                        label { class: "text-[12px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1 px-1", "Feed Type" }
+
                         div {
-                            class: "w-2/3 flex justify-end items-center pointer-events-none",
-                            span {
-                                class: "text-[17px] text-gray-500 dark:text-gray-400 mr-5",
-                                "{item_type}"
-                            }
-                            span {
-                                class: "absolute right-4 text-gray-400 text-xl font-medium",
-                                "›"
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 rounded-[4px] cursor-pointer flex justify-between items-center transition-all",
+                            onclick: move |_| {
+                                let current = *is_premium_menu_open.read();
+                                *is_premium_menu_open.write() = !current;
+                            },
+                            span { class: "text-[16px]", "{item_type}" }
+                            svg {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                class: format!("w-5 h-5 text-[#404943] dark:text-[#c0c9c1] transition-transform duration-200 {}", if *is_premium_menu_open.read() { "rotate-180" } else { "" }),
+                                view_box: "0 0 20 20",
+                                fill: "currentColor",
+                                path { fill_rule: "evenodd", clip_rule: "evenodd", d: "M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" }
                             }
                         }
 
-                        if *is_feed_open.read() {
+                        if *is_premium_menu_open.read() {
                             div {
-                                class: "absolute z-[60] w-[400vw] h-[400vh] -top-[200vh] -left-[200vw] cursor-default",
-                                onclick: move |e| {
-                                    e.stop_propagation();
-                                    *is_feed_open.write() = false;
-                                }
-                            }
-                            div {
-                                class: "absolute right-4 top-11 w-56 bg-[#f2f2f7] dark:bg-[#2c2c2e] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.6)] border border-gray-200 dark:border-gray-700 z-[70] overflow-hidden flex flex-col page-transition",
-                                for option in ["Wheat Bran", "Chaff (Chokar)", "Compound Feed"].into_iter() {
+                                class: "absolute top-[100%] left-0 w-full mt-1 bg-[#fbfdf9] dark:bg-[#191c1a] border border-[#727971]/30 dark:border-[#8b938a]/30 rounded-[8px] shadow-lg overflow-hidden py-1 z-[80]",
+                                for opt in FEED_OPTIONS.iter() {
                                     div {
-                                        class: "px-4 py-3 text-[17px] bg-white dark:bg-[#1c1c1e] text-black dark:text-white active:bg-gray-100 dark:active:bg-[#3a3a3c] transition-colors flex justify-between items-center cursor-pointer border-b border-gray-100 dark:border-gray-800 last:border-0",
-                                        onclick: move |e| {
-                                            e.stop_propagation();
-                                            *item_type.write() = option.to_string();
-                                            *is_feed_open.write() = false;
+                                        class: "px-4 py-3 text-[16px] text-[#191c1a] dark:text-[#e1e3de] hover:bg-[#191c1a]/5 dark:hover:bg-[#fbfdf9]/5 cursor-pointer flex justify-between items-center transition-colors",
+                                        onclick: {
+                                            let option_val = opt.to_string();
+                                            move |_| {
+                                                *item_type.write() = option_val.clone();
+                                                *is_premium_menu_open.write() = false;
+                                            }
                                         },
-                                        span { "{option}" }
-                                        if *item_type.read() == option {
-                                            span { class: "text-[#007aff] dark:text-[#0a84ff] font-bold text-lg", "✓" }
+                                        span { "{opt}" }
+                                        if *item_type.read() == *opt {
+                                            svg {
+                                                xmlns: "http://www.w3.org/2000/svg",
+                                                class: "w-5 h-5 text-[#006c4a] dark:text-[#58d6a5]",
+                                                view_box: "0 0 20 20",
+                                                fill: "currentColor",
+                                                path { fill_rule: "evenodd", clip_rule: "evenodd", d: "M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" }
+                                            }
                                         }
                                     }
                                 }
@@ -402,13 +442,13 @@ fn AddRecord() -> Element {
                     }
 
                     div {
-                        class: "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800",
-                        label { class: "w-1/3 text-black dark:text-white", "Quantity (kg)" }
+                        class: "flex flex-col",
+                        label { class: "text-[12px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1 px-1", "Quantity (kg)" }
                         input {
                             type: "number",
-                            step: "0.01",
-                            class: "w-2/3 bg-transparent text-right text-gray-500 dark:text-gray-400 focus:outline-none focus:text-black dark:focus:text-white cursor-text",
-                            placeholder: "0",
+                            step: "0.1",
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all",
+                            placeholder: "0.0",
                             value: "{quantity}",
                             oninput: move |e| *quantity.write() = e.value(),
                             required: true,
@@ -416,12 +456,11 @@ fn AddRecord() -> Element {
                     }
 
                     div {
-                        class: "flex items-center px-4 py-3",
-                        label { class: "w-1/3 text-black dark:text-white", "Amount (₹)" }
+                        class: "flex flex-col",
+                        label { class: "text-[12px] font-medium text-[#404943] dark:text-[#c0c9c1] mb-1 px-1", "Total Amount (₹)" }
                         input {
                             type: "number",
-                            step: "0.01",
-                            class: "w-2/3 bg-transparent text-right text-gray-500 dark:text-gray-400 focus:outline-none focus:text-black dark:focus:text-white cursor-text",
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all",
                             placeholder: "0",
                             value: "{amount}",
                             oninput: move |e| *amount.write() = e.value(),
@@ -432,7 +471,7 @@ fn AddRecord() -> Element {
 
                 button {
                     type: "submit",
-                    class: "btn-ios w-full py-[14px] text-[17px] font-semibold cursor-pointer",
+                    class: "w-full rounded-full bg-[#006c4a] dark:bg-[#58d6a5] text-white dark:text-[#003825] py-4 text-[15px] font-medium tracking-wide shadow-sm hover:shadow-md active:scale-95 transition-all",
                     "Save Record"
                 }
             }
@@ -443,6 +482,8 @@ fn AddRecord() -> Element {
 #[component]
 fn Login() -> Element {
     let mut email = use_signal(|| "".to_string());
+    let mut password = use_signal(|| "".to_string());
+    let mut show_password = use_signal(|| false);
     let mut otp = use_signal(|| "".to_string());
     let mut otp_sent = use_signal(|| false);
 
@@ -499,14 +540,14 @@ fn Login() -> Element {
             class: "min-h-screen flex items-center justify-center px-4 page-transition",
 
             div {
-                class: "ios-panel w-full max-w-sm p-8 flex flex-col items-center",
+                class: "w-full max-w-sm p-8 flex flex-col items-center bg-[#f0f3ec] dark:bg-[#202522] rounded-[28px] shadow-sm",
 
-                // Dairy Icon / Logo Placeholder
+                // Logo
                 div {
-                    class: "w-16 h-16 bg-[#007aff] rounded-2xl flex items-center justify-center mb-6 shadow-md",
+                    class: "w-16 h-16 bg-[#006c4a] dark:bg-[#58d6a5] rounded-full flex items-center justify-center mb-6 shadow-sm",
                     svg {
                         xmlns: "http://www.w3.org/2000/svg",
-                        class: "w-10 h-10 text-white",
+                        class: "w-10 h-10 text-white dark:text-[#003825]",
                         view_box: "0 0 24 24",
                         path {
                             fill: "currentColor",
@@ -515,10 +556,10 @@ fn Login() -> Element {
                     }
                 }
 
-                h1 { class: "text-[26px] font-bold text-black dark:text-white mb-2 tracking-tight", "Satyam Dairy" }
+                h1 { class: "text-[26px] font-normal text-[#191c1a] dark:text-[#e1e3de] mb-2 tracking-tight", "Satyam Dairy" }
 
                 if !*otp_sent.read() {
-                    p { class: "text-[15px] text-gray-500 text-center mb-8", "Sign in with your email or Google. No password required." }
+                    p { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1] text-center mb-8", "Sign in with your email and password, or use Google." }
 
                     form {
                         class: "w-full",
@@ -527,57 +568,77 @@ fn Login() -> Element {
                         input {
                             id: "email-input",
                             type: "email",
-                            class: "w-full bg-[#f2f2f7] dark:bg-[#2c2c2e] text-black dark:text-white px-4 py-3.5 rounded-xl focus:outline-none mb-4 text-[17px] border border-transparent focus:border-gray-300 dark:focus:border-gray-600 transition-colors placeholder-gray-400",
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all mb-4 text-[16px]",
                             placeholder: "Email address",
                             value: "{email}",
                             oninput: move |e| *email.write() = e.value(),
                             required: true,
                         }
 
+                        div {
+                            class: "w-full relative mb-4",
+                            input {
+                                id: "password-input",
+                                type: if *show_password.read() { "text" } else { "password" },
+                                class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-3.5 pr-12 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all text-[16px]",
+                                placeholder: "Password",
+                                value: "{password}",
+                                oninput: move |e| *password.write() = e.value(),
+                                required: true,
+                            }
+                            button {
+                                type: "button",
+                                class: "absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#404943] dark:text-[#c0c9c1] hover:text-[#191c1a] dark:hover:text-[#e1e3de] transition-colors cursor-pointer",
+                                onclick: move |_| {
+                                    let current = *show_password.read();
+                                    *show_password.write() = !current;
+                                },
+                                if *show_password.read() {
+                                    svg { xmlns: "http://www.w3.org/2000/svg", class: "w-5 h-5", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
+                                        path { d: "M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" }
+                                        path { d: "M1 1l22 22" }
+                                    }
+                                } else {
+                                    svg { xmlns: "http://www.w3.org/2000/svg", class: "w-5 h-5", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
+                                        path { d: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" }
+                                        circle { cx: "12", cy: "12", r: "3" }
+                                    }
+                                }
+                            }
+                        }
+
                         button {
                             type: "submit",
-                            class: "btn-ios w-full py-3.5 text-[17px] font-semibold",
-                            "Send OTP"
+                            class: "w-full rounded-full bg-[#006c4a] dark:bg-[#58d6a5] text-white dark:text-[#003825] py-3.5 text-[15px] font-medium tracking-wide shadow-sm hover:shadow-md active:scale-95 transition-all",
+                            "Sign In"
                         }
                     }
 
                     // Divider
                     div {
                         class: "w-full flex items-center my-6",
-                        div { class: "flex-grow border-t border-gray-200 dark:border-gray-800" }
-                        span { class: "px-3 text-[15px] text-gray-400 font-medium", "or" }
-                        div { class: "flex-grow border-t border-gray-200 dark:border-gray-800" }
+                        div { class: "flex-grow border-t border-[#c0c9c1]/50 dark:border-[#404943]/50" }
+                        span { class: "px-3 text-[14px] text-[#404943] dark:text-[#c0c9c1] font-medium", "or" }
+                        div { class: "flex-grow border-t border-[#c0c9c1]/50 dark:border-[#404943]/50" }
                     }
 
-                    // Google Button
+                    // Google Button (M3 Outlined Button style)
                     button {
-                        class: "w-full flex items-center justify-center gap-3 bg-white dark:bg-[#1c1c1e] text-black dark:text-white border border-gray-200 dark:border-gray-700 py-3.5 rounded-xl text-[17px] font-semibold active:bg-gray-50 dark:active:bg-gray-800 transition-colors cursor-pointer",
+                        class: "w-full flex items-center justify-center gap-3 bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] py-3.5 rounded-full text-[15px] font-medium hover:bg-[#191c1a]/5 dark:hover:bg-[#fbfdf9]/5 active:scale-95 transition-all cursor-pointer",
                         onclick: handle_google_login,
                         svg {
                             xmlns: "http://www.w3.org/2000/svg",
                             class: "w-5 h-5",
                             view_box: "0 0 24 24",
-                            path {
-                                fill: "#4285F4",
-                                d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                            }
-                            path {
-                                fill: "#34A853",
-                                d: "M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                            }
-                            path {
-                                fill: "#FBBC05",
-                                d: "M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                            }
-                            path {
-                                fill: "#EA4335",
-                                d: "M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                            }
+                            path { fill: "#4285F4", d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" }
+                            path { fill: "#34A853", d: "M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" }
+                            path { fill: "#FBBC05", d: "M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" }
+                            path { fill: "#EA4335", d: "M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" }
                         }
                         "Continue with Google"
                     }
                 } else {
-                    p { class: "text-[15px] text-gray-500 text-center mb-8", "We sent a secure 6-digit OTP code to {email.read()}" }
+                    p { class: "text-[14px] text-[#404943] dark:text-[#c0c9c1] text-center mb-8", "We sent a secure 6-digit OTP code to {email.read()}" }
 
                     form {
                         class: "w-full",
@@ -586,23 +647,28 @@ fn Login() -> Element {
                         input {
                             id: "otp-input",
                             type: "text",
-                            class: "w-full bg-[#f2f2f7] dark:bg-[#2c2c2e] text-black dark:text-white px-4 py-4 rounded-xl focus:outline-none mb-6 text-[24px] tracking-[0.5em] text-center font-mono border border-transparent focus:border-[#007aff] transition-colors placeholder-gray-300 dark:placeholder-gray-600",
-                            placeholder: "------",
+                            inputmode: "numeric",
+                            pattern: "[0-9]*",
+                            class: "w-full bg-transparent border border-[#727971] dark:border-[#8b938a] text-[#191c1a] dark:text-[#e1e3de] px-4 py-4 rounded-[4px] focus:outline-none focus:border-[#006c4a] dark:focus:border-[#58d6a5] focus:border-2 transition-all mb-6 text-[24px] tracking-[0.5em] text-center font-mono",
+                            placeholder: "......",
                             maxlength: "6",
                             value: "{otp}",
-                            oninput: move |e| *otp.write() = e.value(),
+                            oninput: move |e| {
+                                let val: String = e.value().chars().filter(|c| c.is_ascii_digit()).collect();
+                                *otp.write() = val;
+                            },
                             required: true,
                         }
 
                         button {
                             type: "submit",
-                            class: "btn-ios w-full py-3.5 text-[17px] font-semibold mb-4",
+                            class: "w-full rounded-full bg-[#006c4a] dark:bg-[#58d6a5] text-white dark:text-[#003825] py-3.5 text-[15px] font-medium tracking-wide shadow-sm hover:shadow-md active:scale-95 transition-all mb-4",
                             "Verify & Sign In"
                         }
 
                         button {
                             type: "button",
-                            class: "w-full text-[15px] text-[#007aff] active:opacity-50 transition-opacity font-medium cursor-pointer",
+                            class: "w-full text-[14px] text-[#006c4a] dark:text-[#58d6a5] active:opacity-50 transition-opacity font-medium cursor-pointer",
                             onclick: move |_| *otp_sent.write() = false,
                             "Use a different email"
                         }
