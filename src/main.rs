@@ -499,13 +499,17 @@ fn Login() -> Element {
                 if (e.key === 'Enter') {
                     if (document.activeElement === document.body) {
                         let email = document.getElementById('email-input');
+                        let password = document.getElementById('password-input');
                         let otp = document.getElementById('otp-input');
                         if (otp) {
                             e.preventDefault();
                             otp.focus();
-                        } else if (email) {
+                        } else if (email && !email.value) {
                             e.preventDefault();
                             email.focus();
+                        } else if (password) {
+                            e.preventDefault();
+                            password.focus();
                         }
                     }
                 }
@@ -646,6 +650,7 @@ fn Login() -> Element {
 
                         input {
                             id: "otp-input",
+                            autofocus: "true",
                             type: "text",
                             inputmode: "numeric",
                             pattern: "[0-9]*",
